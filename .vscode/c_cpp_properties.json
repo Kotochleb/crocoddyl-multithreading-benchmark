@@ -1,0 +1,24 @@
+{
+  "configurations": [
+    {
+      "name": "Linux",
+      "includePath": [
+        "${workspaceFolder}/**",
+        "/usr/include/**",
+        "/home/gepetto/dependencies/**",
+      ],
+      "browse": {
+        "path": [
+          "${workspaceFolder}",
+          "/usr/include",
+          "/home/gepetto/dependencies",
+        ]
+      },
+      "cppStandard": "c++14",
+      "cStandard": "c11",
+      "intelliSenseMode": "gcc-x64",
+      "configurationProvider": "ms-vscode.cmake-tools"
+    }
+  ],
+  "version": 4
+}

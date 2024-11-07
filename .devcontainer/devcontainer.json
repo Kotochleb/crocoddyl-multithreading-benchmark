@@ -1,0 +1,68 @@
+{
+  "name": "gepetto-devcontainer",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "."
+  },
+  "initializeCommand": "xhost +local:docker",
+  "postStartCommand": "bash /entrypoint.sh",
+  "containerEnv": {
+    "DISPLAY": "${localEnv:DISPLAY}",
+    "QT_X11_NO_MITSHM": "1",
+  },
+  "remoteUser": "gepetto",
+  "privileged": true,
+  "mounts": [
+    // Enable sceen acess
+    {
+      "source": "/tmp/.X11-unix",
+      "target": "/tmp/.X11-unix",
+      "type": "bind"
+    },
+    {
+      "source": "/dev/dri",
+      "target": "/dev/dri",
+      "type": "bind"
+    },
+    // Presist bash history
+    {
+      "source": "${localWorkspaceFolderBasename}-bashhistory",
+      "target": "/commandhistory",
+      "type": "volume"
+    }
+  ],
+  "workspaceFolder": "/home/gepetto/benchmark",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/home/gepetto/benchmark,type=bind,consistency=cached",
+  "runArgs": [
+    "--ipc=host",
+    "--net=host"
+  ],
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.profiles.linux": {
+          "bash": {
+            "path": "bash"
+          }
+        },
+        "terminal.integrated.defaultProfile.linux": "bash"
+      },
+      "extensions": [
+        "ms-vscode.cpptools-extension-pack",
+        "ms-python.python",
+        "ms-python.black-formatter",
+        "ms-python.isort",
+        "ms-toolsai.jupyter",
+        "ms-iot.vscode-ros",
+        "redhat.vscode-yaml",
+        "redhat.vscode-xml",
+        "twxs.cmake",
+        "ajshort.msg",
+        "xaver.clang-format",
+        "njpwerner.autodocstring",
+        "cschlosser.doxdocgen",
+        "streetsidesoftware.code-spell-checker"
+      ]
+    }
+  }
+}
