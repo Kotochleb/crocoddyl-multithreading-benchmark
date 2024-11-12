@@ -65,6 +65,11 @@ RUN --mount=type=cache,sharing=locked,target=/var/cache/apt \
         libxss-dev \
         libcanberra-gtk-module \
         libcanberra-gtk3-module \
+        liblttng-ust-dev \
+        lttng-tools \
+        python3-lttngust \
+        openjdk-17-jdk \
+        openjdk-17-jre \
         # python dependencies
         python-is-python3 \
         python3-flake8 \
@@ -82,6 +87,12 @@ RUN --mount=type=cache,sharing=locked,target=/var/cache/apt \
     && echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list \
     && apt-get update \
     && apt-get install -y intel-oneapi-vtune
+
+# Install Trace Compass
+RUN wget https://download.eclipse.org/tracecompass.incubator/trace-server/rcp/trace-compass-server-latest-linux.gtk.x86_64.tar.gz \
+    && tar -xf trace-compass-server-latest-linux.gtk.x86_64.tar.gz \
+    && mv trace-compass-server /opt/trace-compass-server
+ENV PATH=/opt/trace-compass-server:${PATH}
 
 # Create the user
 RUN groupadd --gid 1000 gepetto \

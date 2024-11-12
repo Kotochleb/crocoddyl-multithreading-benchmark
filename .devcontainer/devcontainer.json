@@ -8,7 +8,7 @@
   "postStartCommand": "bash /entrypoint.sh",
   "containerEnv": {
     "DISPLAY": "${localEnv:DISPLAY}",
-    "QT_X11_NO_MITSHM": "1",
+    "QT_X11_NO_MITSHM": "1"
   },
   "remoteUser": "gepetto",
   "privileged": true,
@@ -34,8 +34,7 @@
   "workspaceFolder": "/home/gepetto/benchmark",
   "workspaceMount": "source=${localWorkspaceFolder},target=/home/gepetto/benchmark,type=bind,consistency=cached",
   "runArgs": [
-    "--ipc=host",
-    "--net=host"
+    "--ipc=host"
   ],
   "customizations": {
     "vscode": {
@@ -61,7 +60,8 @@
         "xaver.clang-format",
         "njpwerner.autodocstring",
         "cschlosser.doxdocgen",
-        "streetsidesoftware.code-spell-checker"
+        "streetsidesoftware.code-spell-checker",
+        "eclipse-cdt.vscode-trace-extension"
       ]
     }
   }
