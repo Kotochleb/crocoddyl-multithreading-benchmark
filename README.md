@@ -31,6 +31,4 @@ The docker image provides:
 - [KCachegrind](https://kcachegrind.sourceforge.net/html/Home.html)
 - [Massif-Visualizer](https://github.com/KDE/massif-visualizer)
 - [LTTng](https://lttng.org/)
-- [Trace Compass](https://eclipse.dev/tracecompass/) as [VSCode plugin](eclipse-cdt.vscode-trace-extension).
-
-To use Trace Compass run `tracecompass-server`, click right on tracing output and select `Open with Trace Viewer`.
+- [Trace Compass](https://eclipse.dev/tracecompass/)

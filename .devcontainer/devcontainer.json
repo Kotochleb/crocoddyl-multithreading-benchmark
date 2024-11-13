@@ -27,7 +27,7 @@
     // Presist bash history
     {
       "source": "${localWorkspaceFolderBasename}-bashhistory",
-      "target": "/commandhistory",
+      "target": "/home/gepetto/commandhistory",
       "type": "volume"
     }
   ],
@@ -60,8 +60,7 @@
         "xaver.clang-format",
         "njpwerner.autodocstring",
         "cschlosser.doxdocgen",
-        "streetsidesoftware.code-spell-checker",
-        "eclipse-cdt.vscode-trace-extension"
+        "streetsidesoftware.code-spell-checker"
       ]
     }
   }
