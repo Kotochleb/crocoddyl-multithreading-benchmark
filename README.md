@@ -21,7 +21,11 @@ After the docker image is build inside of container run
 ```
 to build/rebuild the project.
 
-Binary outputs of the scripts can be found in the `build` folder.
+Binary outputs of the scripts can be found in the `build/experiments/<experiment name>` folders.
+
+## Repository structure
+
+This repository is split into series of experiments. Each experiment is in it's separate folder with subfolders contaning source code of the experiment and Jupyter notebooks used to postprocess data and document results.
 
 ## Tools installed
 

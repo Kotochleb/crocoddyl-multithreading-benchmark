@@ -99,7 +99,10 @@
     "numbers": "cpp",
     "semaphore": "cpp",
     "stop_token": "cpp",
-    "valarray": "cpp"
+    "valarray": "cpp",
+    "codecvt": "cpp",
+    "coroutine": "cpp",
+    "source_location": "cpp"
   },
   "python.analysis.extraPaths": [
     "/usr/local/lib/python3.8/site-packages/",

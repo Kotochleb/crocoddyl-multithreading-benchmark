@@ -68,13 +68,4 @@ add_project_dependency(pinocchio REQUIRED)
 add_project_dependency(hpp-fcl REQUIRED)
 add_project_dependency(example-robot-data REQUIRED)
 
-set(${PROJECT_NAME}_BENCHMARK parallel_bench multithreading)
-
-foreach(BENCHMARK_NAME ${${PROJECT_NAME}_BENCHMARK})
-  add_executable(${BENCHMARK_NAME} src/${BENCHMARK_NAME}.cpp src/ddp.cpp)
-  target_include_directories(${BENCHMARK_NAME} PRIVATE include)
-  target_link_libraries(
-    ${BENCHMARK_NAME} example-robot-data::example-robot-data
-    crocoddyl::crocoddyl)
-  add_custom_target("benchmarks-${BENCHMARK_NAME}" ${BENCHMARK_NAME})
-endforeach(BENCHMARK_NAME ${${PROJECT_NAME}_BENCHMARK})
+add_subdirectory(experiments)

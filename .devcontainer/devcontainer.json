@@ -11,6 +11,7 @@
     "QT_X11_NO_MITSHM": "1"
   },
   "remoteUser": "gepetto",
+  "updateRemoteUserUID": true,
   "privileged": true,
   "mounts": [
     // Enable sceen acess
@@ -34,7 +35,8 @@
   "workspaceFolder": "/home/gepetto/benchmark",
   "workspaceMount": "source=${localWorkspaceFolder},target=/home/gepetto/benchmark,type=bind,consistency=cached",
   "runArgs": [
-    "--ipc=host"
+    "--ipc=host",
+    "--net=host"
   ],
   "customizations": {
     "vscode": {
@@ -60,7 +62,8 @@
         "xaver.clang-format",
         "njpwerner.autodocstring",
         "cschlosser.doxdocgen",
-        "streetsidesoftware.code-spell-checker"
+        "streetsidesoftware.code-spell-checker",
+        "ms-toolsai.jupyter"
       ]
     }
   }

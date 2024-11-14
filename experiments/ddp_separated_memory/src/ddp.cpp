@@ -11,6 +11,7 @@
 #include <iostream>
 
 #include "crocoddyl/core/utils/exception.hpp"
+// #include "tracepoint-provider.h"
 
 namespace colmpc_test {
 using namespace crocoddyl;

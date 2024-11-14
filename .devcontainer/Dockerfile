@@ -72,7 +72,12 @@ RUN --mount=type=cache,sharing=locked,target=/var/cache/apt \
         openjdk-17-jre \
     && python -m pip install -U \
         argcomplete \
-        pre-commit
+        pre-commit \
+        numpy==1.26.4 \
+        jupyter \
+        numpy \
+        pandas \
+        seaborn
 
 # Install Intel VTune
 RUN --mount=type=cache,sharing=locked,target=/var/cache/apt \
