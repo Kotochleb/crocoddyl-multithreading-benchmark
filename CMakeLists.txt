@@ -68,4 +68,6 @@ add_project_dependency(pinocchio REQUIRED)
 add_project_dependency(hpp-fcl REQUIRED)
 add_project_dependency(example-robot-data REQUIRED)
 
+include_directories(common/include)
+
 add_subdirectory(experiments)
