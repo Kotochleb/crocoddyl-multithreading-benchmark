@@ -59,8 +59,8 @@ void benchmark_base(const unsigned int nthreads,
 
   // Construct problems on single core
   for (std::size_t i = 0; i < number_of_trials; i++) {
-    // Solve problem in parallel
-    // #pragma omp parallel for num_threads(nthreads) firstprivate(eps)
+// Solve problem in parallel
+#pragma omp parallel for num_threads(nthreads) firstprivate(eps)
     for (std::size_t j = 0; j < N; j++) {
       *(parallel_data[j]) = MatrixType::Random(N, N);
       (*(sym_tmp[j])).noalias() =
