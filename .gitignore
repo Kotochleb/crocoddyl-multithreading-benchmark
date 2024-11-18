@@ -4,3 +4,4 @@ install/*
 callgrind*
 vgcore*
 *.pickle
+cachegrind.out.*
