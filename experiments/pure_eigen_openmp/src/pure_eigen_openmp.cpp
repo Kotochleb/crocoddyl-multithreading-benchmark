@@ -1,26 +1,23 @@
 #include <omp.h>
 
 #include <Eigen/Dense>
+#include <chrono>
+#include <fstream>
 #include <iostream>
 #include <vector>
 
-#include "crocoddyl/core/utils/file-io.hpp"
-#include "crocoddyl/core/utils/timer.hpp"
-
 template <int CompileMatrixSize, int N, bool sync_mem>
-void benchmark_base(const unsigned int nthreads,
-                    const std::string &csv_filename,
-                    const std::string &alignment,
-                    const std::size_t parallel_size,
-                    const std::size_t single_core_size,
-                    const unsigned int number_of_trials,
-                    const std::size_t buffer_size) {
+void benchmark_base(
+    const unsigned int nthreads, const std::string &csv_filename,
+    const std::string &alignment, const std::size_t parallel_size,
+    const std::size_t single_core_size, const unsigned int number_of_trials,
+    const std::size_t buffer_size, const bool enable_opm = true) {
   typedef Eigen::Matrix<double, CompileMatrixSize, CompileMatrixSize>
       MatrixType;
 
   // Data buffers for timings
-  std::vector<double> timings(number_of_trials);
-  std::vector<double> timing_buffer(buffer_size);
+  std::vector<long int> timings(number_of_trials);
+  std::vector<long int> timing_buffer(buffer_size);
 
   // Prepare data for parallel computation
   std::vector<MatrixType, Eigen::aligned_allocator<MatrixType>> parallel_data(
@@ -57,15 +54,13 @@ void benchmark_base(const unsigned int nthreads,
   MatrixType single_core_sym_tmp = MatrixType::Zero(N, N);
   Eigen::LLT<MatrixType> llt;
 
-  // Create timer
-  crocoddyl::Timer timer;
-
   // Construct problems on single core
   for (std::size_t i = 0; i < number_of_trials; i += buffer_size) {
     for (std::size_t j = 0; j < buffer_size; j++) {
 // Solve problem in parallel
-#pragma omp parallel for num_threads(nthreads) firstprivate(eps)
-      for (std::size_t k = 0; k < N; k++) {
+#pragma omp parallel for if (enable_opm) num_threads(nthreads) \
+    shared(parallel_data) firstprivate(eps)
+      for (std::size_t k = 0; k < parallel_size; k++) {
         parallel_data[k] = MatrixType::Random(N, N);
         sym_tmp[k].noalias() = parallel_data[k] * parallel_data[k].transpose();
         parallel_data[k] = sym_tmp[k] + eps;
@@ -80,12 +75,13 @@ void benchmark_base(const unsigned int nthreads,
         single_core_data[k] = single_core_sym_tmp + eps;
       }
 
-      // Measure single core time
-      timer.reset();
+      // Start measuring time
+      std::chrono::steady_clock::time_point begin =
+          std::chrono::steady_clock::now();
       // Enforce memory synchronization between single threaded and
       // multithreaded
       if (sync_mem) {
-        for (std ::size_t k = 0; k < single_core_size; k++) {
+        for (std::size_t k = 0; k < single_core_size; k++) {
           for (std::size_t l = 0; l < parallel_size; l++) {
             single_core_data[k] +=
                 parallel_data[l] * 1.0 / static_cast<double>(parallel_size);
@@ -95,7 +91,12 @@ void benchmark_base(const unsigned int nthreads,
       for (std ::size_t k = 0; k < single_core_size; k++) {
         single_core_ltt[k].compute(single_core_data[k]);
       }
-      timing_buffer[j] = timer.get_us_duration();
+      // Stop measuring time
+      std::chrono::steady_clock::time_point end =
+          std::chrono::steady_clock::now();
+      timing_buffer[j] =
+          std::chrono::duration_cast<std::chrono::microseconds>(end - begin)
+              .count();
     }
 
     std::copy(timing_buffer.begin(), timing_buffer.end(), timings.begin() + i);
@@ -104,14 +105,14 @@ void benchmark_base(const unsigned int nthreads,
   const std::string sync_mem_str = sync_mem ? "true" : "false";
 
   // Save data to CSV
-  CsvStream csv(csv_filename);
-  csv << "nthreads"
-      << "sync_mem"
-      << "alignment"
-      << "time" << csv.endl;
-  for (const double time : timings) {
-    csv << nthreads << sync_mem_str << alignment << time << csv.endl;
+  std::ofstream csv;
+  csv.open(csv_filename);
+  csv << "nthreads,sync_mem,alignment,time," << std::endl;
+  for (const long int time : timings) {
+    csv << nthreads << "," << sync_mem_str << "," << alignment << "," << time
+        << "," << std::endl;
   }
+  csv.close();
 }
 
 template <int CompileMatrixSize, int N>
@@ -119,27 +120,29 @@ inline void benchmark_sync_mem(
     const unsigned int nthreads, const std::string &csv_filename,
     const bool sync_mem, const std::string &alignment,
     const std::size_t parallel_size, const std::size_t single_core_size,
-    const unsigned int number_of_trials, const std::size_t buffer_size) {
+    const unsigned int number_of_trials, const std::size_t buffer_size,
+    const bool enable_opm = true) {
   // Usage of templates ensures that the if statement will be ignored by
   // compiler making the code more efficient and preventing any chance of
   // incorrect branch predictions.
   if (sync_mem) {
     benchmark_base<CompileMatrixSize, N, true>(
         nthreads, csv_filename, alignment, parallel_size, single_core_size,
-        number_of_trials, buffer_size);
+        number_of_trials, buffer_size, enable_opm);
   } else {
     benchmark_base<CompileMatrixSize, N, false>(
         nthreads, csv_filename, alignment, parallel_size, single_core_size,
-        number_of_trials, buffer_size);
+        number_of_trials, buffer_size, enable_opm);
   }
 }
 
 int main(int argc, char *argv[]) {
   // Ensure all arguments are passed
-  if (argc != 5) {
+  if (argc != 6) {
     std::cerr << "Incorrect number of arguments! Example usage 'multithreading "
-                 "<number of cores> <csv output file path>' '<sync memory "
-                 "true/false>' <memory alignment dynamic/static>.";
+                 "<number of cores>' '<csv output file path>' '<sync memory "
+                 "true/false>' '<memory alignment dynamic/static>' '<Enable "
+                 "OpenMP true/false>'.";
     return 1;
   }
   // Parse arguments
@@ -147,6 +150,7 @@ int main(int argc, char *argv[]) {
   const std::string csv_filename = std::string(argv[2]);
   const bool sync_mem = std::string(argv[3]) == "true";
   const std::string alignment = std::string(argv[4]);
+  const bool enable_opm = std::string(argv[5]) == "true";
 
   // Define constant parameters
   const std::size_t parallel_size = 150;
@@ -160,11 +164,11 @@ int main(int argc, char *argv[]) {
   if (alignment == "dynamic") {
     benchmark_sync_mem<Eigen::Dynamic, K>(
         nthreads, csv_filename, sync_mem, alignment, parallel_size,
-        single_core_size, number_of_trials, buffer_size);
+        single_core_size, number_of_trials, buffer_size, enable_opm);
   } else if (alignment == "static") {
     benchmark_sync_mem<K, K>(nthreads, csv_filename, sync_mem, alignment,
                              parallel_size, single_core_size, number_of_trials,
-                             buffer_size);
+                             buffer_size, enable_opm);
   }
 
   return 0;
