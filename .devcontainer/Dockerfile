@@ -29,7 +29,6 @@ RUN --mount=type=cache,sharing=locked,target=/var/cache/apt \
         ca-certificates \
         g++ \
         clang-15 \
-        libomp-dev \
         libomp-15-dev \
         # Python dependencies
         python3-dev \
@@ -122,10 +121,9 @@ RUN mkdir /home/gepetto/commandhistory \
 
 WORKDIR /home/gepetto/dependencies
 COPY install_dependency.sh /home/gepetto/dependencies/install_dependency.sh
-ENV CMAKE_CXX_COMPILER=clang++-15
-RUN bash install_dependency.sh humanoid-path-planner/hpp-fcl/devel/20
-    && bash install_dependency.sh stack-of-tasks/pinocchio/v3.2.0/20
-    && bash install_dependency.sh gepetto/example-robot-data/v4.1.0/20
+RUN bash install_dependency.sh humanoid-path-planner/hpp-fcl/devel/20 \
+    && bash install_dependency.sh stack-of-tasks/pinocchio/v3.2.0/20 \
+    && bash install_dependency.sh gepetto/example-robot-data/v4.1.0/20 \
     && bash install_dependency.sh loco-3d/crocoddyl/v2.1.0/12
 
 ENV LD_LIBRARY_PATH=/usr/local/lib:${LD_LIBRARY_PATH}

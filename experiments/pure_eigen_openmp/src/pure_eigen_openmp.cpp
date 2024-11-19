@@ -56,12 +56,14 @@ void benchmark_base(
   MatrixType single_core_sym_tmp = MatrixType::Zero(N, N);
   Eigen::LLT<MatrixType> llt;
 
+  // omp_set_dynamic(0);
+
   // Construct problems on single core
   for (std::size_t i = 0; i < number_of_trials; i += buffer_size) {
     for (std::size_t j = 0; j < buffer_size; j++) {
 // Solve problem in parallel
 #pragma omp parallel for num_threads(nthreads) if (enable_opm) \
-    shared(parallel_data) firstprivate(eps)
+    shared(parallel_data) firstprivate(eps) schedule(static)
       for (std::size_t k = 0; k < parallel_size; k++) {
         sym_tmp[k].noalias() = parallel_data[k] * parallel_data[k].transpose();
         sym_tmp[k].normalize();
@@ -148,7 +150,7 @@ int main(int argc, char *argv[]) {
     return 1;
   }
   // Parse arguments
-  const unsigned int nthreads = std::stoi(argv[1]);
+  const unsigned int nthreads = static_cast<unsigned int>(std::stoi(argv[1]));
   const std::string csv_filename = std::string(argv[2]);
   const bool sync_mem = std::string(argv[3]) == "true";
   const std::string alignment = std::string(argv[4]);

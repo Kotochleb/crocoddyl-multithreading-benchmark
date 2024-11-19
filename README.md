@@ -21,7 +21,7 @@ After the docker image is build inside of container run
 ```
 to build/rebuild the project.
 
-Binary outputs of the scripts can be found in the `build/experiments/<experiment name>` folders.
+Binary outputs of the scripts can be found in the `build/<compiler name>/experiments/<experiment name>` folders.
 
 ## Repository structure
 

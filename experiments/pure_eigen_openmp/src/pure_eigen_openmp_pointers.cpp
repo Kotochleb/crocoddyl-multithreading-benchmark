@@ -140,7 +140,7 @@ int main(int argc, char *argv[]) {
     return 1;
   }
   // Parse arguments
-  const unsigned int nthreads = std::stoi(argv[1]);
+  const unsigned int nthreads = static_cast<unsigned int>(std::stoi(argv[1]));
   const std::string csv_filename = std::string(argv[2]);
   const bool sync_mem = std::string(argv[3]) == "true";
   const std::string alignment = std::string(argv[4]);
