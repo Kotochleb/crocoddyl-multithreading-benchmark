@@ -27,6 +27,10 @@ RUN --mount=type=cache,sharing=locked,target=/var/cache/apt \
         wget \
         vim \
         ca-certificates \
+        g++ \
+        clang-15 \
+        libomp-dev \
+        libomp-15-dev \
         # Python dependencies
         python3-dev \
         python3-numpy \
@@ -77,16 +81,23 @@ RUN --mount=type=cache,sharing=locked,target=/var/cache/apt \
         jupyter \
         numpy \
         pandas \
-        seaborn
+        seaborn \
+        tqdm
 
-# Install Intel VTune
+# Install Intel VTune and Intel Compiler
 RUN --mount=type=cache,sharing=locked,target=/var/cache/apt \
     --mount=type=cache,sharing=locked,target=/var/lib/apt \
     --mount=type=cache,sharing=locked,target=/root/.cache \
     wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null \
     && echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list \
     && apt-get update \
-    && apt-get install -y intel-oneapi-vtune
+    && apt-get install -y \
+        intel-oneapi-vtune \
+        intel-oneapi-compiler-dpcpp-cpp
+
+ENV PATH=/opt/intel/oneapi/compiler/latest/bin/:${PATH}
+ENV LD_LIBRARY_PATH=/opt/intel/oneapi/compiler/latest/lib:$LD_LIBRARY_PATH
+
 
 # Install Trace Compass
 RUN wget https://mirror.ibcp.fr/pub/eclipse/tracecompass/releases/10.1.0/rcp/trace-compass-10.1.0-20240916-1358-linux.gtk.x86_64.tar.gz \
@@ -111,13 +122,11 @@ RUN mkdir /home/gepetto/commandhistory \
 
 WORKDIR /home/gepetto/dependencies
 COPY install_dependency.sh /home/gepetto/dependencies/install_dependency.sh
-RUN --mount=type=cache,sharing=locked,target=/tmp/docker-ccache \
-    export CCACHE_DIR=/tmp/docker-ccache \
-    && bash install_dependency.sh stack-of-tasks/eigenpy/v3.9.0/4 \
-    && bash install_dependency.sh humanoid-path-planner/hpp-fcl/devel/16 \
-    && bash install_dependency.sh stack-of-tasks/pinocchio/v3.2.0/6 \
-    && bash install_dependency.sh gepetto/example-robot-data/v4.1.0/16 \
-    && bash install_dependency.sh loco-3d/crocoddyl/v2.1.0/5
+ENV CMAKE_CXX_COMPILER=clang++-15
+RUN bash install_dependency.sh humanoid-path-planner/hpp-fcl/devel/20
+    && bash install_dependency.sh stack-of-tasks/pinocchio/v3.2.0/20
+    && bash install_dependency.sh gepetto/example-robot-data/v4.1.0/20
+    && bash install_dependency.sh loco-3d/crocoddyl/v2.1.0/12
 
 ENV LD_LIBRARY_PATH=/usr/local/lib:${LD_LIBRARY_PATH}
 ENV PYTHONPATH=/usr/local/lib/python3.10/site-packages:${PYTHONPATH}

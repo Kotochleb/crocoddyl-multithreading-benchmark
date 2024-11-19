@@ -17,7 +17,7 @@ Install [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-
 
 After the docker image is build inside of container run
 ```bash
-./scripts/build.sh
+./scripts/build.sh <clang++-15 | g++ | icpx>
 ```
 to build/rebuild the project.
 

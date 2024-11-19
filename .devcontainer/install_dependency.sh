@@ -18,12 +18,14 @@ cmake -B "$PRJ/build" -S "$PRJ" \
     -DCMAKE_INSTALL_LIBDIR=lib \
     -DHPP_FCL_HAS_QHULL=ON \
     -DGENERATE_PYTHON_STUBS=OFF \
-    -DBUILD_PYTHON_INTERFACE=ON \
-    -DBUILD_BENCHMARK=ON \
+    -DBUILD_PYTHON_INTERFACE=OFF \
+    -DBUILD_BENCHMARK=OFF \
     -DBUILD_WITH_MULTITHREADS=ON \
     -DBUILD_WITH_NTHREADS=20 \
+    -DBUILD_EXAMPLES=OFF \
     -DCMAKE_C_FLAGS="-O3 -march=native -mavx -mfma" \
     -DCMAKE_CXX_FLAGS="-O3 -march=native -mavx -mfma" \
+    -DCMAKE_CXX_COMPILER="$CMAKE_CXX_COMPILER" \
     -Wno-dev
 cmake --build "$PRJ/build" -j $CORES
 sudo cmake --build "$PRJ/build" -t install
