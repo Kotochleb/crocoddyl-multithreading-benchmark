@@ -49,20 +49,14 @@ void benchmark_base(const unsigned int nthreads,
     single_core_results[i] = 0.0;
   }
 
-  std::cout << omp_get_thread_num() << std::endl;
-
   omp_set_dynamic(0);
-  // omp_set_num_threads(14);
-
-  std::cout << omp_get_thread_num() << std::endl;
 
   // Construct problems on single core
   for (std::size_t i = 0; i < number_of_trials; i += buffer_size) {
     for (std::size_t j = 0; j < buffer_size; j++) {
 // Solve problem in parallel
-#pragma omp parallel default(none)                          \
-    shared(parallel_data, parallel_results) if (enable_opm) \
-    firstprivate(parallel_size)
+#pragma omp parallel default(none) shared(parallel_data, parallel_results) \
+    num_threads(nthreads) if (enable_opm) firstprivate(parallel_size)
 #pragma omp for nowait schedule(static)
       for (std::size_t k = 0; k < parallel_size; k++) {
         // Clear counter
@@ -169,10 +163,10 @@ int main(int argc, char *argv[]) {
   const bool enable_opm = std::string(argv[4]) == "true";
 
   // Define constant parameters
-  const std::size_t parallel_size = 10000;
+  const std::size_t parallel_size = 100;
   const std::size_t single_core_size = 30;
   const std::size_t buffer_size = 20;
-  const unsigned int number_of_trials = 1000;
+  const unsigned int number_of_trials = 100;
   // Size of matrices
   constexpr int N = 20 * 20;
 
