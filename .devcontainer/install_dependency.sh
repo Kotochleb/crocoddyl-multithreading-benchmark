@@ -23,9 +23,7 @@ cmake -B "$PRJ/build" -S "$PRJ" \
     -DBUILD_WITH_MULTITHREADS=ON \
     -DBUILD_WITH_NTHREADS=20 \
     -DBUILD_EXAMPLES=OFF \
-    -DCMAKE_C_FLAGS="-O3 -march=native -mavx -mfma" \
-    -DCMAKE_CXX_FLAGS="-O3 -march=native -mavx -mfma" \
-    -DCMAKE_CXX_COMPILER="$CMAKE_CXX_COMPILER" \
+    -DCMAKE_CXX_FLAGS="-O3 -march=native" \
     -Wno-dev
 cmake --build "$PRJ/build" -j $CORES
 sudo cmake --build "$PRJ/build" -t install
