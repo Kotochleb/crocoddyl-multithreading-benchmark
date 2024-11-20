@@ -1,6 +1,7 @@
 #define EIGEN_DONT_PARALLELIZE
 
 #include <omp.h>
+#include <sys/time.h>
 
 #include <Eigen/Dense>
 #include <chrono>
@@ -18,8 +19,11 @@ void benchmark_base(
       MatrixType;
 
   // Data buffers for timings
-  std::vector<long int> timings(number_of_trials);
-  std::vector<long int> timing_buffer(buffer_size);
+  std::vector<long> whole_timings(number_of_trials);
+  std::vector<long> whole_timing_buffer(buffer_size);
+
+  std::vector<long> single_core_timings(number_of_trials);
+  std::vector<long> single_core_timing_buffer(buffer_size);
 
   // Prepare data for parallel computation
   std::vector<MatrixType, Eigen::aligned_allocator<MatrixType>> parallel_data(
@@ -56,20 +60,35 @@ void benchmark_base(
   MatrixType single_core_sym_tmp = MatrixType::Zero(N, N);
   Eigen::LLT<MatrixType> llt;
 
-  // omp_set_dynamic(0);
+  omp_set_dynamic(0);
+
+  struct timeval begin;
+  struct timeval middle;
+  struct timeval end;
 
   // Construct problems on single core
   for (std::size_t i = 0; i < number_of_trials; i += buffer_size) {
     for (std::size_t j = 0; j < buffer_size; j++) {
-// Solve problem in parallel
-#pragma omp parallel for num_threads(nthreads) if (enable_opm) \
-    shared(parallel_data) firstprivate(eps) schedule(static)
-      for (std::size_t k = 0; k < parallel_size; k++) {
-        sym_tmp[k].noalias() = parallel_data[k] * parallel_data[k].transpose();
-        sym_tmp[k].normalize();
-        parallel_data[k] = sym_tmp[k] + eps;
-        parallel_llt[k].compute(parallel_data[k]);
+      // Start timer for the whole section
+      gettimeofday(&begin, NULL);
+
+      // Solve problem in parallel
+#pragma omp parallel default(none) num_threads(nthreads) if (enable_opm) \
+    shared(parallel_data, sym_tmp, parallel_llt)                         \
+    firstprivate(eps, parallel_size)
+      {
+#pragma omp for schedule(static) nowait
+        for (std::size_t k = 0; k < parallel_size; k++) {
+          sym_tmp[k].noalias() =
+              parallel_data[k] * parallel_data[k].transpose();
+          sym_tmp[k].normalize();
+          parallel_data[k] = sym_tmp[k] + eps;
+          parallel_llt[k].compute(parallel_data[k]);
+        }
       }
+
+      // Take timer snapshot after multi-core section
+      gettimeofday(&middle, NULL);
 
       // Make the matrix symmetric positive definite
       for (std::size_t k = 0; k < single_core_size; k++) {
@@ -79,9 +98,6 @@ void benchmark_base(
         single_core_data[k] = single_core_sym_tmp + eps;
       }
 
-      // Start measuring time
-      std::chrono::high_resolution_clock::time_point begin =
-          std::chrono::high_resolution_clock::now();
       // Enforce memory synchronization between single threaded and
       // multithreaded
       if (sync_mem) {
@@ -96,14 +112,21 @@ void benchmark_base(
         single_core_llt[k].compute(single_core_data[k]);
       }
       // Stop measuring time
-      std::chrono::high_resolution_clock::time_point end =
-          std::chrono::high_resolution_clock::now();
-      timing_buffer[j] =
-          std::chrono::duration_cast<std::chrono::microseconds>(end - begin)
-              .count();
+      gettimeofday(&end, NULL);
+      // Compute time deltas
+      whole_timing_buffer[j] =
+          (end.tv_sec - begin.tv_sec) * static_cast<long>(1e6) +
+          (end.tv_usec - begin.tv_usec);
+      single_core_timing_buffer[j] =
+          (end.tv_sec - middle.tv_sec) * static_cast<long>(1e6) +
+          (end.tv_usec - middle.tv_usec);
     }
 
-    std::copy(timing_buffer.begin(), timing_buffer.end(), timings.begin() + i);
+    // Move data from buffers to final arrays
+    std::copy(whole_timing_buffer.begin(), whole_timing_buffer.end(),
+              whole_timings.begin() + i);
+    std::copy(single_core_timing_buffer.begin(),
+              single_core_timing_buffer.end(), single_core_timings.begin() + i);
   }
 
   const std::string sync_mem_str = sync_mem ? "true" : "false";
@@ -111,10 +134,11 @@ void benchmark_base(
   // Save data to CSV
   std::ofstream csv;
   csv.open(csv_filename);
-  csv << "nthreads,sync_mem,alignment,time," << std::endl;
-  for (const long int time : timings) {
-    csv << nthreads << "," << sync_mem_str << "," << alignment << "," << time
-        << "," << std::endl;
+  csv << "nthreads,sync_mem,alignment,whole,single_core," << std::endl;
+  for (std::size_t i = 0; i < number_of_trials; i++) {
+    csv << nthreads << "," << sync_mem_str << "," << alignment << ","
+        << whole_timings[i] << "," << single_core_timings[i] << ","
+        << std::endl;
   }
   csv.close();
 }
@@ -157,10 +181,10 @@ int main(int argc, char *argv[]) {
   const bool enable_opm = std::string(argv[5]) == "true";
 
   // Define constant parameters
-  const std::size_t parallel_size = 150;
+  const std::size_t parallel_size = 300;
   const std::size_t single_core_size = 30;
   const std::size_t buffer_size = 20;
-  const unsigned int number_of_trials = 100;
+  const unsigned int number_of_trials = 60;
   // Size of matrices
   constexpr int K = 20;
 
