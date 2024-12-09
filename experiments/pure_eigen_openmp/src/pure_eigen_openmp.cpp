@@ -184,7 +184,7 @@ int main(int argc, char *argv[]) {
   const std::size_t parallel_size = 300;
   const std::size_t single_core_size = 30;
   const std::size_t buffer_size = 20;
-  const unsigned int number_of_trials = 60;
+  const unsigned int number_of_trials = 100;
   // Size of matrices
   constexpr int K = 20;
 
