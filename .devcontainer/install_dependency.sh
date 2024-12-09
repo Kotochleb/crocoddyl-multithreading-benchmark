@@ -12,6 +12,7 @@ CORES="${split[3]}"
 
 git clone --branch "$TAG" --depth 1 "https://github.com/$ORG/$PRJ"
 cmake -B "$PRJ/build" -S "$PRJ" \
+    -DCOAL_BACKWARD_COMPATIBILITY_WITH_HPP_FCL=ON \
     -DBUILD_TESTING=OFF \
     -DBUILD_WITH_COLLISION_SUPPORT=ON  \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo \
