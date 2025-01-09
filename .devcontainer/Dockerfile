@@ -81,7 +81,8 @@ RUN --mount=type=cache,sharing=locked,target=/var/cache/apt \
         numpy \
         pandas \
         seaborn \
-        tqdm
+        tqdm \
+        py-cpuinfo
 
 # Install Intel VTune and Intel Compiler
 RUN --mount=type=cache,sharing=locked,target=/var/cache/apt \
@@ -121,10 +122,10 @@ RUN mkdir /home/gepetto/commandhistory \
 
 WORKDIR /home/gepetto/dependencies
 COPY install_dependency.sh /home/gepetto/dependencies/install_dependency.sh
-RUN bash install_dependency.sh humanoid-path-planner/hpp-fcl/devel/20 \
-    && bash install_dependency.sh stack-of-tasks/pinocchio/v3.2.0/10 \
-    && bash install_dependency.sh gepetto/example-robot-data/v4.1.0/20 \
-    && bash install_dependency.sh loco-3d/crocoddyl/v2.1.0/12
+RUN bash install_dependency.sh humanoid-path-planner/hpp-fcl/devel/32 
+RUN bash install_dependency.sh stack-of-tasks/pinocchio/v3.2.0/8
+RUN bash install_dependency.sh gepetto/example-robot-data/v4.1.0/10 
+RUN bash install_dependency.sh loco-3d/crocoddyl/v2.1.0/10
 
 ENV LD_LIBRARY_PATH=/usr/local/lib:${LD_LIBRARY_PATH}
 ENV PYTHONPATH=/usr/local/lib/python3.10/site-packages:${PYTHONPATH}
